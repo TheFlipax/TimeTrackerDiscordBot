@@ -12,11 +12,11 @@ intents.members = True
 class TimeBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix="!", intents=intents)
-        self.tracker = TimeTracker("data/stats.json")  # Создание трекера
+        self.tracker = TimeTracker("data/stats.json")
 
     async def setup_hook(self):
         await self.load_extension("cogs.commands")
-        await self.load_extension("cogs.events") # Подключение событий
+        await self.load_extension("cogs.events")
 
     async def on_ready(self):
         print(f"Бот запущен")

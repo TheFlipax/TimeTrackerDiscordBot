@@ -13,15 +13,12 @@ class Events(commands.Cog):
         before: discord.VoiceState,
         after: discord.VoiceState,
     ):
-        # Игнорирование ботов
         if member.bot:
             return
 
-        # Вход в голосовой канал
         if before.channel is None and after.channel is not None:
             self.bot.tracker.start(member.guild.id, member.id)
 
-        # Выход из голосового канала
         elif before.channel is not None and after.channel is None:
             self.bot.tracker.stop(member.guild.id, member.id)
 
