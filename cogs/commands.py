@@ -8,6 +8,7 @@ def format_time(total_seconds: int) -> str:
     seconds = total_seconds % 60
     return f"{hours} ч. {minutes} мин. {seconds} сек."
 
+
 class Commands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -23,6 +24,25 @@ class Commands(commands.Cog):
 
         await ctx.send(
             f"⏱️ **{target.display_name}** провел в голосовых каналах: **{format_time(total_seconds)}**"
+        )
+
+    @commands.command(name="duos")
+    async def duos(
+        self,
+        ctx: commands.Context,
+        member1: discord.Member,
+        member2: discord.Member = None,
+    ):
+        first = ctx.author if member2 is None else member1
+        second = member1 if member2 is None else member2
+
+        if first.id == second.id:
+            await ctx.send("❌ Укажите другого участника.")
+            return
+
+        total_seconds = self.bot.tracker.get_duo_seconds(ctx.guild.id, first.id, second.id)
+        await ctx.send(
+            f"🤝 **{first.display_name}** и **{second.display_name}** провели вместе в голосовых каналах: **{format_time(total_seconds)}**"
         )
 
     @commands.command(name="top")

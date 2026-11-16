@@ -10,16 +10,16 @@ def tracker(tmp_path):
 
 
 def test_start_and_stop(tracker):
-    tracker.start(guild_id=100, user_id=1)
+    tracker.start(guild_id=100, user_id=1, channel_id=10)
     time.sleep(1.1)
     elapsed = tracker.stop(guild_id=100, user_id=1)
     assert elapsed >= 1, f"Ожидалась минимум 1 сек, получено {elapsed}"
 
 
 def test_channel_switch_does_not_reset_timer(tracker):
-    tracker.start(guild_id=100, user_id=2)
+    tracker.start(guild_id=100, user_id=2, channel_id=10)
     time.sleep(1.1)
-    tracker.start(guild_id=100, user_id=2)
+    tracker.start(guild_id=100, user_id=2, channel_id=20)
     time.sleep(1.1)
     elapsed = tracker.stop(guild_id=100, user_id=2)
     assert elapsed >= 2, f"Таймер сбросился! Получено {elapsed} сек вместо >= 2"
@@ -29,15 +29,29 @@ def test_stop_inactive_user(tracker):
     assert tracker.stop(guild_id=100, user_id=999) == 0
 
 
+def test_duo_time_tracking(tracker):
+    tracker.start(guild_id=100, user_id=1, channel_id=10)
+    tracker.start(guild_id=100, user_id=2, channel_id=10)
+    time.sleep(1.1)
+
+    assert tracker.get_duo_seconds(guild_id=100, user1_id=1, user2_id=2) >= 1
+
+    tracker.stop(guild_id=100, user_id=1)
+    tracker.stop(guild_id=100, user_id=2)
+
+    assert tracker.get_duo_seconds(guild_id=100, user1_id=1, user2_id=2) >= 1
+    assert tracker.get_duo_seconds(guild_id=100, user1_id=2, user2_id=1) >= 1
+
+
 def test_json_persistence_live_stats_and_top(tmp_path):
     test_file = tmp_path / "test_stats.json"
     tracker = TimeTracker(str(test_file))
 
-    tracker.start(guild_id=100, user_id=1)
+    tracker.start(guild_id=100, user_id=1, channel_id=10)
     time.sleep(1.1)
     tracker.stop(guild_id=100, user_id=1)
 
-    tracker.start(guild_id=100, user_id=2)
+    tracker.start(guild_id=100, user_id=2, channel_id=10)
     time.sleep(2.1)
     tracker.stop(guild_id=100, user_id=2)
 
@@ -46,7 +60,7 @@ def test_json_persistence_live_stats_and_top(tmp_path):
     assert user1_stats["total_seconds"] >= 1
     assert user1_stats["sessions"] == 1
 
-    reloaded_tracker.start(guild_id=100, user_id=1)
+    reloaded_tracker.start(guild_id=100, user_id=1, channel_id=10)
     time.sleep(1.1)
     assert reloaded_tracker.get_user_seconds(guild_id=100, user_id=1) >= 2
 

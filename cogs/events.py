@@ -16,11 +16,18 @@ class Events(commands.Cog):
         if member.bot:
             return
 
-        if before.channel is None and after.channel is not None:
-            self.bot.tracker.start(member.guild.id, member.id)
+        afk_channel = member.guild.afk_channel
+        before_active = before.channel is not None and before.channel != afk_channel
+        after_active = after.channel is not None and after.channel != afk_channel
 
-        elif before.channel is not None and after.channel is None:
+        if not before_active and after_active:
+            self.bot.tracker.start(member.guild.id, member.id, after.channel.id)
+
+        elif before_active and not after_active:
             self.bot.tracker.stop(member.guild.id, member.id)
+
+        elif before_active and after_active and before.channel != after.channel:
+            self.bot.tracker.start(member.guild.id, member.id, after.channel.id)
 
 
 async def setup(bot: commands.Bot):
